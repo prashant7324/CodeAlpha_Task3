@@ -1,0 +1,145 @@
+package com.example.languagelearningapp
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.languagelearningapp.ui.theme.LanguageLearningAppTheme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            LanguageLearningAppTheme {
+                LanguageLearningApp()
+            }
+        }
+    }
+}
+
+@Composable
+fun LanguageLearningApp() {
+    var currentScreen by remember { mutableStateOf("home") }
+
+    when (currentScreen) {
+        "home" -> HomeScreen(onNavigateToLesson = { currentScreen = "lesson" }, onNavigateToQuiz = { currentScreen = "quiz" }, onNavigateToForum = { currentScreen = "forum" })
+        "lesson" -> LessonScreen(onNavigateToQuiz = { currentScreen = "quiz" })
+        "quiz" -> QuizScreen(onNavigateToHome = { currentScreen = "home" })
+        "forum" -> ForumScreen(onNavigateToHome = { currentScreen = "home" })
+    }
+}
+
+@Composable
+fun HomeScreen(onNavigateToLesson: () -> Unit, onNavigateToQuiz: () -> Unit, onNavigateToForum: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "Welcome to Language Learning App!", fontSize = 24.sp, modifier = Modifier.padding(8.dp))
+        Button(onClick = onNavigateToLesson) {
+            Text("Start Lesson")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onNavigateToQuiz) {
+            Text("Take a Quiz")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onNavigateToForum) {
+            Text("Community Forum")
+        }
+    }
+}
+
+@Composable
+fun LessonScreen(onNavigateToQuiz: () -> Unit) {
+    var lessonText by remember { mutableStateOf("Learn basic greetings!") }
+    var lessonContent by remember { mutableStateOf("Hello, Bonjour, Hola!") }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = lessonText, fontSize = 24.sp, modifier = Modifier.padding(8.dp))
+        Text(text = lessonContent, fontSize = 20.sp, modifier = Modifier.padding(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onNavigateToQuiz) {
+            Text("Take Quiz")
+        }
+    }
+}
+
+@Composable
+fun QuizScreen(onNavigateToHome: () -> Unit) {
+    var score by remember { mutableStateOf(0) }
+    val quizQuestions = listOf("What is the French word for 'Hello'?", "How do you say 'Goodbye' in Spanish?")
+    val answers = listOf("Bonjour", "Adiós")
+    
+    var currentQuestionIndex by remember { mutableStateOf(0) }
+    var answer by remember { mutableStateOf("") }
+    var isCorrect by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = quizQuestions[currentQuestionIndex], fontSize = 20.sp)
+        OutlinedTextField(
+            value = answer,
+            onValueChange = { answer = it },
+            label = { Text("Your Answer") }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = {
+            if (answer.equals(answers[currentQuestionIndex], ignoreCase = true)) {
+                isCorrect = true
+                score++
+            } else {
+                isCorrect = false
+            }
+            if (currentQuestionIndex < quizQuestions.size - 1) {
+                currentQuestionIndex++
+                answer = ""
+            } else {
+                onNavigateToHome() // Navigate to Home once the quiz is complete
+            }
+        }) {
+            Text("Submit Answer")
+        }
+        if (isCorrect) {
+            Text("Correct!", color = MaterialTheme.colors.primary)
+        } else if (answer.isNotEmpty()) {
+            Text("Incorrect, Try Again.", color = MaterialTheme.colors.error)
+        }
+    }
+}
+
+@Composable
+fun ForumScreen(onNavigateToHome: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Community Forum", fontSize = 24.sp, modifier = Modifier.padding(8.dp))
+        Text("Discuss tips, tricks, and experiences with other learners.", fontSize = 18.sp)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onNavigateToHome) {
+            Text("Back to Home")
+        }
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun DefaultPreview() {
+    LanguageLearningAppTheme {
+        LanguageLearningApp()
+    }
+}
